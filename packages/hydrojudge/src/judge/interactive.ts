@@ -2,7 +2,7 @@
 import { NormalizedCase, STATUS } from '@hydrooj/common';
 import { PassInfo } from '../checkers';
 import { runFlow } from '../flow';
-import { runPiped } from '../sandbox';
+import { runPiped, supportsExitOrder } from '../sandbox';
 import signals from '../signals';
 import { parse } from '../testlib';
 import { Context, ContextSubTask } from './interface';
@@ -55,7 +55,8 @@ const judgeCase = (c: NormalizedCase) => async (ctx: Context, ctxSubtask: Contex
         const memoryLimitExceeded = memory > c.memory * 1024;
         const userRuntimeError = Boolean((code && code !== 13/* Broken Pipe */) || (code === 13 && !resInteractor.code));
         const result = parse(resInteractor.stderr, c.score, ctx.config.detail);
-        const interactorExitedFirst = userExitOrder > 0
+        const interactorExitedFirst = supportsExitOrder()
+            && userExitOrder > 0
             && resInteractor.exitOrder > 0
             && resInteractor.exitOrder < userExitOrder;
         const interactorWAOverridesUserFailure = interactorExitedFirst

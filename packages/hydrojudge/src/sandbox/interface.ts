@@ -4,6 +4,7 @@ export interface SandboxVersion {
     platform: string;
     os: string;
     copyOutOptional?: boolean;
+    exitOrder?: boolean;
     pipeProxy?: boolean;
     addressSpaceLimit?: boolean;
     stream?: boolean;

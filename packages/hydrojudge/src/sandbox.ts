@@ -17,6 +17,8 @@ const argv = cac().parse();
 const logger = new Logger('sandbox');
 let callId = 0;
 let supportOptional = false;
+let supportExitOrder = false;
+let sandboxFeaturesLoaded = false;
 
 const statusMap: Map<SandboxStatus, number> = new Map([
     [SandboxStatus.TimeLimitExceeded, STATUS.STATUS_TIME_LIMIT_EXCEEDED],
@@ -77,6 +79,10 @@ function parseArgs(execute: string): string[] {
 
 export async function del(fileId: string) {
     await client.deleteFile(fileId);
+}
+
+export function supportsExitOrder(): boolean {
+    return supportExitOrder;
 }
 
 function proc(params: Parameter): Cmd {
@@ -160,9 +166,11 @@ export async function runPiped(
     let res: SandboxResult[];
     const size = parseMemoryMB(getConfig('stdio_size'));
     try {
-        if (!supportOptional) {
-            const { copyOutOptional } = await client.version();
+        if (!sandboxFeaturesLoaded) {
+            const { copyOutOptional, exitOrder } = await client.version();
             supportOptional = copyOutOptional;
+            supportExitOrder = Boolean(exitOrder);
+            sandboxFeaturesLoaded = true;
             if (!copyOutOptional) logger.warn('Sandbox version tooooooo low! Please upgrade to at least 1.2.0');
         }
         const body = {
